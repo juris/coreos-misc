@@ -4,7 +4,7 @@
 #
 
 META_URL="http://169.254.169.254"
-AWS_CLI="$(which docker) run --rm balaclavalab/awscli"
+AWS_CLI="$(which docker) run --rm balaclavalab/docker-awscli"
 ZONE=$(curl -s ${META_URL}/latest/meta-data/placement/availability-zone)
 REGION=${ZONE::-1}
 
