@@ -73,4 +73,5 @@ for i in {0..60}; do
    fi
 done
 
+blockdev --setra 32 $DRIVE_ID
 echo $DRIVE_ID
