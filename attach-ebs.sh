@@ -62,3 +62,5 @@ for i in {0..60}; do
      EBS_CHECK=$(${AWS_CLI} ec2 describe-volumes --volume-ids $EBS_ID --query 'Volumes[*].{ID:State}' --output text)
    fi
 done
+
+blockdev --setra 32 /dev/xvd${DRIVE_LETTER}
