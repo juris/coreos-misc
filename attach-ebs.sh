@@ -47,13 +47,13 @@ if [ -z $EBS_ID ]; then
   exit 0
 fi
 
-
 INSTANCE_ID=$(curl -s ${META_URL}/latest/meta-data/instance-id)
 EBS_CHECK=$(${AWS_CLI} ec2 describe-volumes --volume-ids $EBS_ID --query 'Volumes[*].{ID:State}' --output text)
 
 if [ "$EBS_CHECK" == "in-use" ]; then
   DRIVE_ID=$(ls /dev/xvd* | grep -o '[[:alpha:]]' | tail -n 1)
   DRIVE_ID="/dev/xvd${DRIVE_ID}"
+  blockdev --setra 32 $DRIVE_ID
   echo $DRIVE_ID
   exit 0
 else
