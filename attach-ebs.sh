@@ -3,9 +3,11 @@
 # Attaches EBS to CoreOS AWS instance
 #
 
+errcho() { echo "$@" 1>&2; }
+
 # Check if there are any arguments
 if [ $# -eq 0 ]; then
-  echo "Use -v to set volume name."
+  errcho "Use -v to set volume name."
   exit 1
 fi
 
@@ -18,12 +20,12 @@ while getopts "v:" opt; do
     v)
       VOLUME_NAME=$OPTARG
       if [ -z "$VOLUME_NAME" ]; then
-        echo "Volume name is not set."
+        errcho "Volume name is not set."
         exit 1
       fi
       ;;
     \?)
-      echo "Use -v to set volume name."
+      errcho "Use -v to set volume name."
       exit 0
       ;;
   esac
@@ -41,21 +43,29 @@ EBS_ID=$(${AWS_CLI} ec2 describe-volumes \
                     --output text)
 
 if [ -z $EBS_ID ]; then
-  echo "No EBS volumes found with pattern: ${VOLUME_NAME}."
+  errcho "No EBS volumes found with pattern: ${VOLUME_NAME}."
   exit 0
 fi
 
-INSTANCE_ID=$(curl -s ${META_URL}/latest/meta-data/instance-id)
-DRIVE_LETTER=$(ls /dev/xvd* | grep -o '[[:alpha:]]' | tail -n 1 | tr "0-9a-z" "2-9a-z")
 
-${AWS_CLI} ec2 attach-volume --volume-id ${EBS_ID} --instance-id ${INSTANCE_ID} --device /dev/xvd${DRIVE_LETTER}
+INSTANCE_ID=$(curl -s ${META_URL}/latest/meta-data/instance-id)
+EBS_CHECK=$(${AWS_CLI} ec2 describe-volumes --volume-ids $EBS_ID --query 'Volumes[*].{ID:State}' --output text)
+
+if [ "$EBS_CHECK" == "in-use" ]; then
+  DRIVE_ID=$(ls /dev/xvd* | grep -o '[[:alpha:]]' | tail -n 1)
+  DRIVE_ID="/dev/xvd${DRIVE_ID}"
+  echo $DRIVE_ID
+  exit 0
+else
+  DRIVE_ID=$(ls /dev/xvd* | grep -o '[[:alpha:]]' | tail -n 1 | tr "0-9a-z" "2-9a-z")
+  DRIVE_ID="/dev/xvd${DRIVE_ID}"
+  ${AWS_CLI} ec2 attach-volume --volume-id ${EBS_ID} --instance-id ${INSTANCE_ID} --device ${DRIVE_ID} > /dev/null
+fi
 
 # It takes some time for EBS to be attached. So
 # here is some magic to make sure that EBS is in place.
-EBS_CHECK=$(${AWS_CLI} ec2 describe-volumes --volume-ids $EBS_ID --query 'Volumes[*].{ID:State}' --output text)
 for i in {0..60}; do
    if [ "$EBS_CHECK" == "in-use" ]; then
-     echo "Volume ${EBS_ID} attached."
      break
    else
      sleep 1
@@ -63,4 +73,4 @@ for i in {0..60}; do
    fi
 done
 
-blockdev --setra 32 /dev/xvd${DRIVE_LETTER}
+echo $DRIVE_ID
