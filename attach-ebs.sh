@@ -53,7 +53,7 @@ EBS_CHECK=$(${AWS_CLI} ec2 describe-volumes --volume-ids $EBS_ID --query 'Volume
 if [ "$EBS_CHECK" == "in-use" ]; then
   DRIVE_ID=$(ls /dev/xvd* | grep -o '[[:alpha:]]' | tail -n 1)
   DRIVE_ID="/dev/xvd${DRIVE_ID}"
-  blockdev --setra 32 $DRIVE_ID
+  sudo blockdev --setra 32 $DRIVE_ID
   echo $DRIVE_ID
   exit 0
 else
@@ -73,5 +73,5 @@ for i in {0..60}; do
    fi
 done
 
-blockdev --setra 32 $DRIVE_ID
+sudo blockdev --setra 32 $DRIVE_ID
 echo $DRIVE_ID
