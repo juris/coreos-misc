@@ -17,11 +17,12 @@ if $(${PYPY_PATH}/bin/pypy --version &> /dev/null); then
   exit 0
 fi
 
-sudo mkdir -p $PYPY_PATH
+sudo mkdir -p $PYPY_PATH /opt/bin
 sudo chown core:core $PYPY_PATH
 curl -Lo $PYPY_PATH/pypy.tar.bz2 https://bitbucket.org/squeaky/portable-pypy/downloads/pypy-${PYPY_VERSION}-linux_x86_64-portable.tar.bz2
 tar jxf $PYPY_PATH/pypy.tar.bz2 -C $PYPY_PATH --strip-components 1
 rm $PYPY_PATH/pypy.tar.bz2
-$PYPY_PATH/bin/pypy -m ensurepip
+sudo ln -s $PYPY_PATH/bin/pypy /opt/bin/python
+/opt/bin/python -m ensurepip
 
 exit 0
