@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# Attaches ENI with 'NAT interface' description to CoreOS AWS instance
+# Attaches ENI with 'NAT' description to CoreOS AWS instance
 #
 
-ENI_LABEL="NAT Interface"
+ENI_LABEL="NAT"
 META_URL="http://169.254.169.254"
-AWS_CLI="docker run --rm balaclavalab/docker-awscli"
+AWS_CLI="docker run --rm balaclavalab/awscli"
 ZONE=$(curl -s ${META_URL}/latest/meta-data/placement/availability-zone)
 REGION=${ZONE::-1}
 
@@ -21,9 +21,8 @@ ${AWS_CLI} --region ${REGION} ec2 attach-network-interface --network-interface-i
 
 # It takes some time for ENI to be attached. So
 # here is some magic to make sure that is up.
-IP_CMD=$(ip)
 for i in {0..30}; do
-  sudo $IP_CMD link set eth0 down && \
-  sudo $IP_CMD link set eth1 up && break
+  sudo ip link set eth0 down && \
+  sudo ip link set eth1 up && break
   sleep 1
 done
