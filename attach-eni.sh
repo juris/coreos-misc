@@ -15,6 +15,12 @@ ENI_ID=$(${AWS_CLI} --region ${REGION} ec2 describe-network-interfaces \
                     --query 'NetworkInterfaces[*].{ID:NetworkInterfaceId}' \
                     --output text)
 
+if [ $? -ne 0 ]
+then
+  echo "Unable to locate ENI."
+  exit 1
+fi
+
 INSTANCE_ID=$(curl -s ${META_URL}/latest/meta-data/instance-id)
 
 ${AWS_CLI} --region ${REGION} ec2 attach-network-interface --network-interface-id ${ENI_ID} --instance-id ${INSTANCE_ID} --device-index 1
