@@ -34,7 +34,7 @@ done
 META_URL="http://169.254.169.254"
 ZONE=$(curl -s ${META_URL}/latest/meta-data/placement/availability-zone)
 REGION=${ZONE::-1}
-AWS_CLI="$(which docker) run --rm balaclavalab/docker-awscli --region ${REGION}"
+AWS_CLI="docker run --rm balaclavalab/awscli --region ${REGION}"
 
 EBS_ID=$(${AWS_CLI} ec2 describe-volumes \
                     --filters Name="availability-zone",Values="${ZONE}" \
