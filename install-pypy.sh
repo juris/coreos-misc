@@ -4,7 +4,7 @@
 #
 
 PYPY_PATH="/opt/pypy"
-PYPY_VERSION="5.10.0"
+PYPY_VERSION="7.0.0"
 
 if [ "$(whoami)" != "core" ]; then
   echo 'Please run script as "core" user'
